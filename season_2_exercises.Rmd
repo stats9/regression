@@ -1,0 +1,920 @@
+---
+title: "Multivariate, HomeWork II"
+author: "Habib ezatabadi"
+date: '2022-10-06'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+
+
+
+## loading libraries
+
+```{r}
+library(tidyverse)
+library(MVA)
+library(HSAUR3)
+library(corrplot)
+library(car)
+dat <- USairpollution
+```
+
+
+
+## get a head of data and name of variables
+
+
+```{r}
+
+head(dat)
+dim(dat)
+
+glimpse(dat)
+```
+
+
+***
+***
+
+
+## Ex 2.1: Use the bivariate boxplot on the scatterplot of each pair of variables in the air pollution data to identify any outliers. Calculate the correlation between each pair of variables using all the data and the data with any identified outliers removed. Comment on the results.
+
+
+
+```{r fig.width = 7, fig.height = 7}
+
+cor_full <- cor(dat) %>% round(3)
+cor_editted <- matrix(1, 7, 7, dimnames = list(names(dat), names(dat)))
+Id <- 1:nrow(dat)
+labs <- names(dat)
+
+### 1
+
+bvbox(cbind(dat[, 1], dat[, 2]), 
+xlab = labs[1], ylab = labs[2], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 1], y = dat[, 2], labels = Id, col = "red")
+ind1 <- c(7, 23, 30, 33)
+cor_editted[1, 2] <- cor_editted[2, 1] <- cor(dat[-ind1, c(1, 2)])[1, 2] %>%
+  round(3)
+
+### 2
+
+bvbox(cbind(dat[, 1], dat[, 3]), 
+xlab = labs[1], ylab = labs[3], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 1], y = dat[, 3], labels = Id, col = "red")
+ind2 <- c(14, 9, 38, 30, 33, 36)
+cor_editted[1, 3] <- cor_editted[3, 1] <- cor(dat[-ind2, c(1, 3)])[1, 2] %>%
+  round(3)
+
+
+
+
+### 3
+
+bvbox(cbind(dat[, 1], dat[, 4]), 
+xlab = labs[1], ylab = labs[4], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 1], y = dat[, 4], labels = Id, col = "red")
+ind3 <- c(7, 9, 16, 14, 30, 33)
+cor_editted[1, 4] <- cor_editted[4, 1] <- cor(dat[-ind3, c(1, 4)])[1, 2] %>%
+  round(3)
+
+
+
+### 4
+
+bvbox(cbind(dat[, 1], dat[, 5]), 
+xlab = labs[1], ylab = labs[5], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 1], y = dat[, 5], labels = Id, col = "red")
+ind4 <- c(7, 33, 40)
+cor_editted[1, 5] <- cor_editted[5, 1] <- cor(dat[-ind4, c(1, 5)])[1, 2] %>%
+  round(3)
+
+
+
+
+### 5
+
+bvbox(cbind(dat[, 1], dat[, 6]), 
+xlab = labs[1], ylab = labs[6], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 1], y = dat[, 6], labels = Id, col = "red")
+ind5 <- c(7, 31, 33, 2, 23)
+cor_editted[1, 6] <- cor_editted[6, 1] <- cor(dat[-ind5, c(1, 6)])[1, 2] %>%
+  round(3)
+
+
+
+
+### 6
+
+
+bvbox(cbind(dat[, 1], dat[, 7]), 
+xlab = labs[1], ylab = labs[7], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 1], y = dat[, 7], labels = Id, col = "red")
+ind6 <- c(2, 5, 33, 7, 31)
+cor_editted[1, 7] <- cor_editted[7, 1] <- cor(dat[-ind6, c(1, 7)])[1, 2] %>%
+  round(3)
+
+
+
+
+### 7
+
+
+bvbox(cbind(dat[, 2], dat[, 3]), 
+xlab = labs[2], ylab = labs[3], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 2], y = dat[, 3], labels = Id, col = "red")
+ind7 <- c(30, 7, 14)
+cor_editted[2, 3] <- cor_editted[3, 2] <- cor(dat[-ind7, c(2, 3)])[1, 2] %>%
+  round(3)
+
+
+
+
+### 8
+
+
+bvbox(cbind(dat[, 2], dat[, 4]), 
+xlab = labs[2], ylab = labs[4], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 2], y = dat[, 4], labels = Id, col = "red")
+ind8 <- c(30, 7, 14, 16)
+cor_editted[2, 4] <- cor_editted[4, 2] <- cor(dat[-ind8, c(2, 4)])[1, 2] %>%
+  round(3)
+
+
+
+### 9
+
+
+bvbox(cbind(dat[, 2], dat[, 5]), 
+xlab = labs[2], ylab = labs[5], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 2], y = dat[, 5], labels = Id, col = "red")
+ind9 <- c(31, 23, 16)
+cor_editted[2, 5] <- cor_editted[5, 2] <- cor(dat[-ind9, c(2, 5)])[1, 2] %>%
+  round(3)
+
+
+
+### 10
+
+
+bvbox(cbind(dat[, 2], dat[, 6]), 
+xlab = labs[2], ylab = labs[6], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 2], y = dat[, 6], labels = Id, col = "red")
+ind10 <- c(2, 12, 31, 23, 27)
+cor_editted[2, 6] <- cor_editted[6, 2] <- cor(dat[-ind9, c(2, 6)])[1, 2] %>%
+  round(3)
+
+
+
+
+### 11
+
+
+bvbox(cbind(dat[, 2], dat[, 7]), 
+xlab = labs[2], ylab = labs[7], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 2], y = dat[, 7], labels = Id, col = "red")
+ind10 <- c(2, 31, 23)
+cor_editted[2, 7] <- cor_editted[7, 2] <- cor(dat[-ind10, c(2, 7)])[1, 2] %>% round(3)
+
+
+
+
+
+
+### 12
+
+
+bvbox(cbind(dat[, 3], dat[, 4]), 
+xlab = labs[3], ylab = labs[4], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 3], y = dat[, 4], labels = Id, col = "red")
+ind12 <- c(9, 14, 30, 16, 7)
+cor_editted[3, 4] <- cor_editted[4, 3] <- cor(dat[-ind12, c(3, 4)])[1, 2] %>% round(3)
+
+
+
+
+
+### 13
+
+
+bvbox(cbind(dat[, 3], dat[, 5]), 
+xlab = labs[3], ylab = labs[5], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 3], y = dat[, 5], labels = Id, col = "red")
+ind13 <- c(30, 7, 40)
+cor_editted[3, 5] <- cor_editted[5, 3] <- cor(dat[-ind13, c(3, 5)])[1, 2] %>% round(3)
+
+
+
+
+
+
+### 14
+
+
+bvbox(cbind(dat[, 3], dat[, 6]), 
+xlab = labs[3], ylab = labs[6], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 3], y = dat[, 6], labels = Id, col = "red")
+ind14 <- c(30, 7, 2)
+cor_editted[3, 6] <- cor_editted[6, 3] <- cor(dat[-ind14, c(3, 6)])[1, 2] %>% round(3)
+
+
+
+
+
+### 15
+
+
+bvbox(cbind(dat[, 3], dat[, 7]), 
+xlab = labs[3], ylab = labs[7], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 3], y = dat[, 7], labels = Id, col = "red")
+ind15 <- c(30, 7, 31, 9)
+cor_editted[3, 7] <- cor_editted[7, 3] <- cor(dat[-ind15, c(3, 7)])[1, 2] %>% round(3)
+
+
+
+
+### 16
+
+
+bvbox(cbind(dat[, 4], dat[, 5]), 
+xlab = labs[4], ylab = labs[5], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 4], y = dat[, 5], labels = Id, col = "red")
+ind16 <- c(30, 7, 14, 40)
+cor_editted[4, 5] <- cor_editted[5, 4] <- cor(dat[-ind16, c(4, 5)])[1, 2] %>% round(3)
+
+
+
+
+
+
+
+### 17
+
+
+bvbox(cbind(dat[, 4], dat[, 6]), 
+xlab = labs[4], ylab = labs[6], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 4], y = dat[, 6], labels = Id, col = "red")
+ind17 <- c(30, 7, 14, 2)
+cor_editted[4, 6] <- cor_editted[6, 4] <- cor(dat[-ind17, c(4, 6)])[1, 2] %>% round(3)
+
+
+
+### 18
+
+
+bvbox(cbind(dat[, 4], dat[, 7]), 
+xlab = labs[4], ylab = labs[7], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 4], y = dat[, 7], labels = Id, col = "red")
+ind18 <- c(30, 7, 14, 31)
+cor_editted[4, 7] <- cor_editted[7, 4] <- cor(dat[-ind18, c(4, 7)])[1, 2] %>% round(3)
+
+
+
+
+### 19
+
+
+bvbox(cbind(dat[, 5], dat[, 6]), 
+xlab = labs[5], ylab = labs[6], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 5], y = dat[, 6], labels = Id, col = "red")
+ind19 <- c(2, 12, 31)
+cor_editted[5, 6] <- cor_editted[6, 5] <- cor(dat[-ind19, c(5, 6)])[1, 2] %>% round(3)
+
+
+
+### 20
+
+
+bvbox(cbind(dat[, 5], dat[, 7]), 
+xlab = labs[5], ylab = labs[7], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 5], y = dat[, 7], labels = Id, col = "red")
+ind20 <- c(5, 31, 40)
+cor_editted[5, 7] <- cor_editted[7, 5] <- cor(dat[-ind20, c(5, 7)])[1, 2] %>% round(3)
+
+
+
+
+### 21
+
+
+bvbox(cbind(dat[, 6], dat[, 7]), 
+xlab = labs[6], ylab = labs[7], col = adjustcolor("blue", .5), pch = 16)
+text(x = dat[, 6], y = dat[, 7], labels = Id, col = "red")
+ind21 <- c(2, 12, 31)
+cor_editted[6, 7] <- cor_editted[7, 6] <- cor(dat[-ind21, c(6, 7)])[1, 2] %>% round(3)
+
+
+corrplot(cor_full, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "correlation matrix with full data", type = "full", 
+mar = c(0, 0, 5, 0), 
+bg = "gray40", addgrid.col = "yellow")
+
+corrplot(cor_editted, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "correlation matrix with truncated data", type = "full", 
+mar = c(0, 0, 5, 0), bg = "gray40", addgrid.col = "yellow")
+```
+
+
+
+
+***
+***
+
+
+
+
+
+## Ex. 2.2 Compare the chi-plots with the corresponding scatterplots for each pair of variables in the air pollution data. Do you think that there is any advantage in the former?
+
+```{r fig.height = 7, fig.width = 7}
+
+
+# 1
+
+chiplot(x = dat[, 1], y = dat[, 2], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 1], y = dat[, 2], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[1], ylab = labs[2])
+
+
+
+
+# 2
+
+
+chiplot(x = dat[, 1], y = dat[, 3], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 1], y = dat[, 3], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[1], ylab = labs[3])
+
+
+
+
+
+
+
+
+
+# 3
+
+
+chiplot(x = dat[, 1], y = dat[, 4], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 1], y = dat[, 4], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[1], ylab = labs[4])
+
+
+
+
+# 4
+
+
+chiplot(x = dat[, 1], y = dat[, 5], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 1], y = dat[, 5], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[1], ylab = labs[5])
+
+
+
+
+# 5
+
+
+chiplot(x = dat[, 1], y = dat[, 6], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 1], y = dat[, 6], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[1], ylab = labs[6])
+
+
+
+
+# 6
+
+
+chiplot(x = dat[, 1], y = dat[, 7], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 1], y = dat[, 7], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[1], ylab = labs[7])
+
+
+
+
+# 7
+
+
+chiplot(x = dat[, 2], y = dat[, 3], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 2], y = dat[, 3], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[2], ylab = labs[3])
+
+
+
+
+# 8
+
+
+chiplot(x = dat[, 2], y = dat[, 4], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 2], y = dat[, 4], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[2], ylab = labs[4])
+
+
+
+
+# 9
+
+
+chiplot(x = dat[, 2], y = dat[, 5], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 2], y = dat[, 5], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[2], ylab = labs[5])
+
+
+
+
+# 10
+
+
+chiplot(x = dat[, 2], y = dat[, 6], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 2], y = dat[, 6], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[2], ylab = labs[6])
+
+
+
+
+# 11
+
+
+chiplot(x = dat[, 2], y = dat[, 7], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 2], y = dat[, 7], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[2], ylab = labs[7])
+
+
+
+
+# 12
+
+
+chiplot(x = dat[, 3], y = dat[, 4], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 3], y = dat[, 4], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[3], ylab = labs[4])
+
+
+
+
+# 13
+
+
+chiplot(x = dat[, 3], y = dat[, 5], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 3], y = dat[, 5], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[3], ylab = labs[5])
+
+
+
+
+# 14
+
+
+chiplot(x = dat[, 3], y = dat[, 6], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 3], y = dat[, 6], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[3], ylab = labs[6])
+
+
+
+
+# 15
+
+
+chiplot(x = dat[, 3], y = dat[, 7], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 3], y = dat[, 7], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[3], ylab = labs[7])
+
+
+
+
+# 16
+
+
+chiplot(x = dat[, 4], y = dat[, 5], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 4], y = dat[, 5], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[4], ylab = labs[5])
+
+
+
+
+# 17
+
+
+chiplot(x = dat[, 4], y = dat[, 6], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 4], y =  dat[, 6], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[4], ylab = labs[6])
+
+
+
+
+# 18
+
+
+chiplot(x = dat[, 4], y = dat[, 7], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 4], y = dat[, 7], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[4], ylab = labs[7])
+
+
+
+
+# 19
+
+
+chiplot(x = dat[, 5], y = dat[, 6], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 5],y = dat[, 6], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[5], ylab = labs[6])
+
+
+
+
+# 20
+
+
+chiplot(x = dat[, 5], y = dat[, 7], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 5], y = dat[, 7], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[5], ylab = labs[7])
+
+
+
+
+# 21
+
+
+chiplot(x = dat[, 6], y = dat[, 7], pch = 16, col = "darkblue")
+
+scatterplot(x = dat[, 6], y = dat[, 7], pch = 16, col = "darkblue", 
+            cex = 1.5, regLine = list(method = lm, lwd = 2, 
+            col = adjustcolor("red", .5)), smooth = FALSE, 
+            xlab = labs[6], ylab = labs[7])
+```
+
+
+
+***
+***
+
+
+
+
+
+## Ex. 2.3 Construct a scatterplot matrix of the body measurements data that
+has the appropriate boxplot on the diagonal panels and bivariate boxplots
+on the other panels. Compare the plot with Figure 2.17, and say which
+diagram you find more informative about the data.
+
+
+```{r fig.height = 9, fig.width = 9}
+
+library(httpgd)
+hgd()
+hgd_browse()
+measure <- 
+structure(list(chest = c(34L, 37L, 38L, 36L, 38L, 43L,
+40L, 38L, 40L, 41L, 36L, 36L, 34L, 33L, 36L, 37L, 34L, 36L, 38L,
+35L), waist = c(30L, 32L, 30L, 33L, 29L, 32L, 33L, 30L, 30L, 32L,
+24L, 25L, 24L, 22L, 26L, 26L, 25L, 26L, 28L, 23L), hips = c(32L,
+37L, 36L, 39L, 33L, 38L, 42L, 40L, 37L, 39L, 35L, 37L, 37L, 34L,
+38L, 37L, 38L, 37L, 40L, 35L), 
+factor(rep(c("male", "female"), each = 10))), .Names = c("chest", "waist", "hips", "gender"), class = "data.frame", row.names = c(NA, -20L))
+
+
+lab <- "ScatterPlotMatrix for measure data excluded Gender"
+dat2 <- measure[, -4]
+labs <- names(dat2)
+par(mfrow = c(3, 3), oma = c(0, 0, 2, 0), mar = c(2, 5, 4, 2))
+boxplot(x = dat2[, 1], col = "orange", main = labs[1], ylab = labs[1], 
+        col.main = "darkblue", cex.main = 2, font.main = 2, 
+        col.lab = "darkblue", cex.lab = 2, font.lab = 2, xlab = "")
+bvbox(cbind(dat[, c(1, 2)]), pch = 16, col = "darkblue", 
+      main = labs[2], col.main = "darkblue", cex.main = 2, font.lab = 2, 
+      xlab = "", ylab = "")
+bvbox(cbind(dat[, c(1, 3)]), pch = 16, col = "darkblue", main = labs[3],
+      col.main = "darkblue", cex.main = 2, font.lab = 2, xlab = "", 
+      ylab = "")
+bvbox(cbind(dat[, c(2, 1)]), pch = 16, col = "darkblue", 
+      ylab = labs[2], 
+      col.lab = "darkblue", cex.lab = 2, font.lab = 2, xlab = "")
+boxplot(x = dat[, 2], col = "orange")
+bvbox(cbind(dat[, c(2, 3)]), pch = 16, col = "darkblue", xlab = "", 
+      ylab = "")
+bvbox(cbind(dat[, c(3, 1)]), pch = 16, col = "darkblue", ylab = labs[3], 
+col.lab = "darkblue", cex.lab = 2, font.lab = 2, xlab = "")
+bvbox(cbind(dat[, c(3, 2)]), pch = 16, col = "darkblue", xlab = "", 
+      ylab = "")
+boxplot(x = dat[, 3], col = "orange", xlab = "")
+mtext(lab, outer = TRUE, cex = 1.5, font = 4, col=rgb(0.1,0.3,0.5,0.5))
+
+
+####################################
+
+attach(measure)
+library(KernSmooth)
+par(mfrow = c(3, 3), oma = c(0, 0, 2, 0), mar = c(2, 5, 4, 2))
+
+
+
+hist(chest, axes = F, ylab = "")
+
+res1 <-  bkde2D(measure[, 1:2], bandwidth = sapply(measure[, 1:2], dpik))
+contour(res1$x1, res1$x2, res1$fhat)
+
+res2 <-  bkde2D(measure[, c(1, 3)], bandwidth = sapply(measure[, c(1, 3)], dpik))
+contour(res2$x1, res2$x2, res2$fhat)
+
+res3 <-  bkde2D(measure[, 2:1], bandwidth = sapply(measure[, 2:1], dpik))
+contour(res3$x1, res3$x2, res3$fhat)
+
+hist(waist, axes = F, ylab = "")
+
+res4 <-  bkde2D(measure[, c(2, 3)], bandwidth = sapply(measure[, c(2, 3)], dpik))
+contour(res4$x1, res4$x2, res4$fhat)
+
+res5 <-  bkde2D(measure[, c(3, 1)], bandwidth = sapply(measure[, c(3, 1)], dpik))
+contour(res5$x1, res5$x2, res5$fhat)
+
+res6 <-  bkde2D(measure[, c(3, 2)], bandwidth = sapply(measure[, c(3, 2)], dpik))
+contour(res6$x1, res6$x2, res6$fhat)
+
+hist(hips, axes = F, ylab = "")
+
+detach(measure)
+```
+
+
+
+
+
+
+
+
+***
+***
+
+
+## Ex. 2.4 Construct a further scatterplot matrix of the body measurements data that labels each point in a panel with the gender of the individual, and plot on each scatterplot the separate estimated bivariate densities for men and women.
+
+
+```{r fig.height = 9, fig.width = 9}
+theme_update(plot.title = element_text(
+color = "darkblue", size = 30, face = "bold"), 
+axis.title.x = element_text(
+color = "darkblue", size = 30, face = "bold"), 
+axis.title.y = element_text(
+color = "darkblue", size = 30, face = "bold"))
+  
+par(mfrow = c(3, 3), oma = c(0, 0, 2, 0), mar = c(2, 5, 4, 2))
+old <- theme_set(theme_bw())
+
+P1 <- measure %>%
+ggplot(aes(x = chest, group = gender, colour = gender)) +
+  geom_density() + labs(x = "", y = "chest", title = "chest") + 
+  theme(legend.position = "bottom") 
+measure %>%
+mutate(Gen = case_when(gender == "female" ~ "f", 
+TRUE ~ "m")) %>%
+ggplot(aes(x = chest, y = waist, colour = gender)) + 
+geom_point(shape = "") +
+geom_text(aes(label = Gen)) -> P11
+P2 <- measure %>%
+  ggplot(aes(x = chest, y = waist, group = gender, colour = gender)) +
+  geom_point(shape = "",  size = 5) + 
+  geom_text(aes(label = gender)) + 
+  geom_density_2d() + theme(legend.position = "bottom") + 
+  labs(x = "", y = "", title = "waist")
+
+
+P3 <- measure %>%
+  ggplot(aes(x = chest, y = hips, group = gender, colour = gender)) +
+  geom_point(shape = "",  size = 5) + 
+  geom_text(aes(label = gender)) + 
+  geom_density_2d() + theme(legend.position = "bottom") + 
+  labs(x = "", y = "", title = "hips")
+
+
+P4 <- measure %>%
+  ggplot(aes(x = waist, y = chest, group = gender, colour = gender)) +
+  geom_point(shape = "",  size = 5) + 
+  geom_text(aes(label = gender)) + 
+  geom_density_2d() + theme(legend.position = "bottom") + 
+  labs(x = "", y = "waist", title = "")
+
+
+P5 <- measure %>%
+ggplot(aes(x = waist, group = gender, colour = gender)) +
+  geom_density() + labs(x = "x", y = "y") + 
+  theme(legend.position = "bottom") + 
+  labs(x = "", y = "", title = "")
+
+
+measure %>%
+mutate(Gen = case_when(gender == "female" ~ "f", 
+TRUE ~ "m")) %>%
+ggplot(aes(x = chest, y = hips, colour = gender)) + 
+geom_point(shape = "") +
+geom_text(aes(label = Gen)) -> P12
+
+P6 <- measure %>%
+  ggplot(aes(x = waist, y = hips, group = gender, colour = gender)) +
+  geom_point(shape = "",  size = 5) + 
+  geom_text(aes(label = gender)) + 
+  geom_density_2d() + theme(legend.position = "bottom") + 
+  labs(x = "", y = "", title = "")
+
+
+P7 <- measure %>%
+  ggplot(aes(x = hips, y = chest, group = gender, colour = gender)) +
+  geom_point(shape = "",  size = 5) + 
+  geom_text(aes(label = gender)) + 
+  geom_density_2d() + theme(legend.position = "bottom") + 
+  labs(x = "", y = "hips", title = "")
+
+
+
+P8 <- measure %>%
+  ggplot(aes(x = hips, y = waist, group = gender, colour = gender)) +
+  geom_point(shape = "",  size = 5) + 
+  geom_text(aes(label = gender)) + 
+  geom_density_2d() + theme(legend.position = "bottom") + 
+  labs(x = "", y = "", title = "")
+
+
+P9 <- measure %>%
+ggplot(aes(x = hips, group = gender, colour = gender)) +
+  geom_density() + labs(x = "", y = "") + 
+  theme(legend.position = "bottom")
+
+measure %>%
+mutate(Gen = case_when(gender == "female" ~ "f", 
+TRUE ~ "m")) %>%
+ggplot(aes(x = waist, y = hips, colour = gender)) + 
+geom_point(shape = "") +
+geom_text(aes(label = "Gen")) -> P13
+
+library(ggpubr)
+
+Fig <- ggarrange(P11, P2, P3, P4, P12, P6, P7, P8, P13, 
+                 nrow = 3, ncol = 3)
+
+
+Fig <- annotate_figure(Fig, 
+top = text_grob("ScatterPlot Matrix For Measure data", color = "plum4", 
+face = "bold", size = 14), 
+
+right = text_grob("this is bivariate density Plot and contour plot", 
+color = "plum3", 
+rot = 90, face = "bold", size = 14),
+fig.lab = "made by Habib", fig.lab.face = "bold", 
+fig.lab.pos = "bottom.left")
+Fig
+```
+
+
+
+
+
+
+
+***
+***
+
+
+
+
+
+Ex. 2.5 Construct a scatterplot matrix of the chemical composition of
+Romano-British pottery given in Chapter 1 (Table 1.3), identifying each
+unit by its kiln number and showing the estimated bivariate density on
+each panel. What does the resulting diagram tell you?
+
+
+```{r fig.height = 10, fig.height = 10}
+Name <- c("Al203", "Fe203", "Mg0", "Ca0", "Na20", 
+          "K20", "Ti02", "Mn0", "Ba0", "Klin")
+dat <- read.table(file = file.choose(), header = FALSE) 
+names(dat) <- Name
+dat <- dat %>%
+  mutate(Klin = as.factor(Klin))
+dim(dat)
+head(dat)
+
+dat$Klin %>% table
+
+
+
+
+
+## second way
+
+pairs(dat[, -10], 
+      panel = function(x, y, ...){
+      res <-  MASS :: kde2d(x, y)
+      points(x, y,  ...)
+      text(x, y, labels = dat$Klin)
+     contour(res$x, res$y, res$z, add = TRUE)}
+     , pch = ".", cex = 1.5)
+
+```
+
+***
+***
+
+
+## Ex. 2.6 Construct a bubble plot of the earthquake data using latitude and
+longitude as the scatterplot and depth as the circles, with greater depths
+giving smaller circles. In addition, divide the magnitudes into three equal
+ranges and label the points in your bubble plot with a different symbol
+depending on the magnitude group into which the point falls.
+
+
+
+
+
+```{r fig.width = 7, fig.height = 7}
+
+data(quakes)
+names(quakes)
+
+dat2 <- quakes
+
+dat <- dat2 %>%
+mutate(depth_fact = factor(cut_number(dat2$depth, 3))) 
+
+dat$depth_fact %>% summary
+dat %>%
+  ggplot(aes(x = lat, y = long, size = depth, 
+             shape = depth_fact, colour = depth_fact)) + 
+  geom_point() + 
+  labs(x = "lat", y = "long", title = "Bubble Plot for quakes data", 
+       caption = "made by habib") + theme(legend.position = "bottom")
+```
+
+
+
+
+
+
+
+

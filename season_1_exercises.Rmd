@@ -1,0 +1,397 @@
+---
+title: "Multivariate Analysis HomeWork I"
+author: "Habib ezatabadi"
+date: '2022-09-30'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+
+## Ex 1.1
+Find the correlation Matrix and Covariance Matrix of the data in Table 1.1.
+
+
+```{r}
+dat1 <- data.frame(
+  individual = 1:10, 
+  sex = rep(c("Male", "Female"), each = 5),
+  age = c(21, 43, 22, 86, 60, 
+          16, NA, 43, 22, 80), 
+  IQ = c(120, NA, 135, 150, 92, 130, 150, NA, 84, 70), 
+  depression = c("Yes", 
+                 "No", "No", 
+                 "No", "Yes", 
+                 "Yes", "Yes", 
+                 "Yes", "No", 
+                 "No"),
+  health = c("Very good", 
+             "Very good", 
+             "Average", 
+             "Very poor", 
+             "Good", 
+             "Good", 
+             "Very good", 
+             "Average", 
+             "Average", 
+             "Good"),
+  weight = c(150, 160, 135, 
+             140, 110, 110, 
+             120, 120, 105, 100)
+)
+
+print(dat1)
+
+dat1 <- dat1[, -1]
+library(tidyverse)
+library(psych)
+
+dat2 <- dat1 %>%
+  mutate(sex = case_when(
+    sex == "Male" ~ 0, 
+    TRUE ~ 1
+  ), 
+  depression = case_when(
+    depression == "Yes" ~ 1, 
+    TRUE ~ 0
+  ), 
+  health = case_when(
+    health == "Very poor" ~ 0, 
+    health == "Average" ~ 1, 
+    health == "Good" ~ 2, 
+    TRUE ~ 3
+  ))
+print(dat2)
+
+# get correlation matrix
+lowerCor(dat2)
+
+
+###########################
+
+temp1 <- unlist(lapply(1:10, function(x){
+  temp3 <- dat2[x, ]
+  temp <- sum(is.na(temp3))
+  if(temp) return(x)
+})) 
+temp1
+
+dat3 <- dat2[-temp1, ]
+
+cor(dat3)
+cov(dat3)
+
+
+###
+
+library(rstatix)
+lapply(dat1, class)
+dat4 <- dat1 %>%
+  convert_as_factor(sex, depression, health) %>%
+  mutate(health = ordered(health, levels = c("Very poor", 
+                                             "Average", 
+                                             "Good", 
+                                             "Very good")))
+dat4$health
+dat4$health %>% rank
+
+
+library(ltm)
+library(sjstats)
+
+Name <- names(dat1)
+cormat <- matrix(NA, 6, 6, 
+                 dimnames = list(Name, Name))
+
+cormat[1, 1] <- 1
+cormat[1, 2] <- biserial.cor(dat1$age, dat1$sex, 
+use = "complete.obs",
+level = 2)
+cormat[1, 3] <- biserial.cor(dat1$IQ, dat1$sex, 
+use = "complete.obs",
+level = 2)
+cormat[1, 4] <- cramer(table(dat1$sex, dat1$depression))
+cormat[1, 5] <- cramer(table(dat1$sex, dat1$health))
+cormat[1, 6] <- biserial.cor(dat1$weight, dat1$sex, 
+use = "complete.obs",
+level = 2)
+cormat[2, 1] <- cormat[1, 2]
+cormat[2, 2] <- 1
+cormat[2, 3] <- cor(dat1$age, dat1$IQ, use = "complete.obs")
+cormat[2, 4] <- biserial.cor(dat1$age, dat1$depression, 
+use = "complete.obs",
+level = 2)
+cormat[2, 5] <- cor(dat1$age, rank(dat1$health), use = "complete.obs", 
+                    method = "spearman")
+
+cormat[2, 6] <- cor(dat1$age, dat1$weight, use = "complete.obs")
+cormat[3, 1:2] <- cormat[1:2, 3]
+cormat[3, 3] <- 1
+cormat[3, 4] <- cormat[2, 4] <- biserial.cor(dat1$IQ, dat1$depression, 
+use = "complete.obs",
+level = 2)
+
+cormat[3, 5] <- cor(dat1$IQ, rank(dat1$health), use = "complete.obs", 
+                    method = "spearman")
+cormat[3, 6] <- cor(dat1$IQ, dat1$weight, use = "complete.obs")
+
+cormat[4, 1:3] <- cormat[1:3, 4]
+cormat[4, 4] <- 1
+cormat[4, 5] <- cramer(table(dat1$health, dat1$depression))
+
+cormat[4, 6] <- biserial.cor(dat1$weight, dat1$depression, 
+use = "complete.obs",
+level = 2)
+
+cormat[5, 1:4] <- cormat[1:4, 5]
+cormat[5, 5] <- 1
+cormat[5, 6] <- cor(dat1$weight, rank(dat1$health), use = "complete.obs", 
+                    method = "spearman")
+cormat[6, 1:5] <- cormat[1:5, 6]
+cormat[6, 6] <- 1
+cormat
+
+library(corrplot)
+corrplot(cormat, method = "number", type = "full")
+
+# compare with  pearson correlation only
+
+corrplot(cor(dat3), method = "number", type = "full")
+```
+
+
+
+
+
+
+***
+***
+
+
+## Ex 1.2 
+Fill in the missing values in Table 1.1 with appropriate mean values,
+and recalculate the correlation matrix of the data.
+
+
+
+```{r}
+
+h_fun <- function(x){
+if(is.numeric(x)) a <- mean(x) else{
+temp1 <- table(x)
+ind <- which.max(temp1)
+a <- names(temp1)[ind]
+}
+return(a)
+}
+
+h_fun2 <- function(x){
+which(is.na(x)) -> ind 
+temp <- h_fun(x)
+x[ind] <- temp
+return(x)
+}
+
+dat_complete <- as.data.frame(apply(dat1, 2, h_fun2))
+dat_complete 
+```
+
+
+
+
+
+***
+***
+
+
+
+## Ex 1.3  
+
+1.3 Examine both the normal probability plots of each variable in the
+archaeology data in Table 1.3 and the chi-square plot of the data. Do the
+plots suggest anything unusual about the data?
+
+
+```{r fig.height=7, fig.width=7}
+dat <- read.table(file.choose(), header = FALSE)
+dim(dat)
+Name <- c("Al203", "Fe203", "Mg0", "Ca0", "Na20", 
+          "K20", "Ti02", "Mn0", "Ba0", "Klin")
+names(dat) <- Name
+head(dat)
+library(ggpubr)
+
+dat1 <- dat[, 1:4]
+dat1 %>% pivot_longer(cols = everything(), names_to = "Variables", 
+values_to = "value") %>%
+ggqqplot(x = "value", add = "qqline", 
+color = "Variables",
+conf.int = FALSE, 
+conf.int.level = FALSE,
+ggtheme = theme_bw()) +
+  facet_wrap("Variables")
+
+
+dat2 <- dat[, 5:8]
+dat2 %>% pivot_longer(cols = everything(), names_to = "Variables", 
+values_to = "value") %>%
+ggqqplot(x = "value", add = "qqline", 
+color = "Variables",
+conf.int = FALSE, 
+conf.int.level = FALSE,
+ggtheme = theme_bw()) +
+  facet_wrap("Variables")
+  
+
+
+dat3 <- dat[, 9:10]
+dat3 %>% pivot_longer(cols = everything(), names_to = "Variables", 
+values_to = "value") %>%
+ggqqplot(x = "value", add = "qqline", 
+color = "Variables",
+conf.int = FALSE, 
+conf.int.level = FALSE,
+ggtheme = theme_bw()) +
+  facet_wrap("Variables")
+
+
+
+dat %>% pivot_longer(cols = everything(), names_to = "Variables", 
+values_to = "Vars") %>%
+group_by(Variables) %>%
+shapiro_test(vars = "Vars")
+
+
+P <- dim(dat)[2]
+
+sinv <- solve(cov(dat))
+xbarr <- colMeans(dat)
+result1 <- apply(dat, 1,
+function(x){
+dd <- x - xbarr
+res <- dd %*% sinv %*% dd
+return(res)
+})
+
+n <- length(result1)
+
+Prob <- (1:n)/n - 1/(2*n)
+
+Expected <- qchisq(Prob, df = P)
+
+data.frame(Di2 = sort(result1), 
+           expected_values = Expected) %>%
+  ggplot(aes(x = Expected, y = Di2)) + 
+  geom_point(size = 2, colour = "red") + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2, colour = "blue", 
+              size = 1.5) +
+  theme_bw()
+
+
+##
+
+library(MVN)
+mvn(dat, mvnTest = "hz", 
+    multivariatePlot = "qq")
+```
+
+
+
+
+
+
+***
+***
+
+
+
+## Ex 1.4
+
+Convert the covariance matrix given below into the corresponding
+correlation matrix
+
+
+
+```{r}
+
+covMat <- matrix(c(
+3.8778, 2.811, 3.148, 
+3.5062, 2.811, 2.121, 
+2.2669, 2.569, 3.148, 2.2669, 
+2.655, 2.8341, 3.5062, 
+2.569, 2.8341, 3.2352), 4, 4)
+
+covMat
+
+D <- diag(diag(covMat), 4, 4)
+sqrt(solve(D)) -> Dinv
+
+Cormat <- Dinv %*% covMat %*% Dinv
+
+
+Cormat
+
+corrplot(Cormat, method = "number", type = "full")
+```
+
+
+
+
+
+***
+***
+
+
+
+## Ex 1.5
+
+
+For the small set of (10 × 5) multivariate data given below, find
+the (10 × 10) Euclidean distance matrix for the rows of the matrix. An
+alternative to Euclidean distance that might be used in some cases is what is Known as __city block distance__ (think New York). Write some R code to calculate the city block distance matrix for the data. 
+
+
+
+
+
+```{r}
+mymat <- matrix(c(
+3, 6, 4, 0, 7, 
+4, 2, 7, 4 ,6, 
+4, 0, 3, 1, 5, 
+6, 2, 6, 1, 1,
+1, 6, 2, 1, 4, 
+5, 1, 2, 0, 2, 
+1, 1, 2, 6, 1, 
+1, 1, 5, 4, 4, 
+7, 0, 1, 3, 3,
+3, 3, 0, 5, 1), 10, 5, 
+byrow = TRUE)
+
+mymat
+
+
+mydist <- dist(mymat)
+
+mydist
+
+
+## 
+
+mydist_city_block <- matrix(NA, 10, 10)
+for(i in 1:10){
+  for(j in 1:10){
+  if(i == j) mydist_city_block[i, j] = 0 else{
+  temp1 = mymat[i, ]
+  temp2 <- mymat[j, ]
+  temp3 <- abs(temp1 - temp2)
+  mydist_city_block[i, j] <- sum(temp3)
+  }
+  }
+}
+
+mydist_city_block
+```

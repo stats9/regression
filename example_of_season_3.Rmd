@@ -1,0 +1,349 @@
+---
+title: "Multivariate, Dr PurAhmad, HomeWork III"
+author: "Habib Ezatabadi"
+date: "2022-10-11"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+
+
+
+## Ex 3.10.1 
+
+```{r fig.height = 7, fig.width = 7}
+library(tidyverse)
+library(MVA)
+#library(vcdExtra)
+headsize <- read.csv(file.choose())[, -1]
+head(headsize)
+dat <- headsize[, c("head1", "head2")]
+head(dat)
+options(digits = 6)
+xbar <- colMeans(dat) # get xbar from data
+xbar 
+S <- cov(dat) # get covariance matrix from data
+S
+pca_model1 <- prcomp(x = dat, scale = FALSE)
+#pca_model1
+pca_model <- princomp(x = dat, covmat = cov(dat), fix_sign = FALSE, scores = TRUE)
+
+pca_model2 <- princomp(x = dat, fix_sign = F, scores = T)
+pca_model2
+print(summary(pca_model2), loadings = TRUE)
+
+library(factoextra)
+mat1 <- get_eig(pca_model) # get Eigen values from pca Model
+print(mat1)
+sum(mat1$eigenvalue) 
+sum(diag(cov(dat))) # trace S = summation Eigen values
+fviz_eig(pca_model, addlabels = TRUE) # Scree Plot with factoextra package
+
+get_pca(pca_model2, "ind")$coord[1, ] # get Scores from pca Model
+
+pca_model2$scores[1, ] # get scores from pca model with another way
+## 
+lamb <- diag(sqrt(mat1$eigenvalue)) # get diagonal matrix with root of eigen values
+lamb
+Eig_vec <- matrix(pca_model$loadings[1:4], 2, 2) # create a matrix with eigen vectors
+Astar <- Eig_vec%*% lamb # create Astar for recreate covariance matrix (S)
+
+S_hat <- Astar %*% (Astar %>% t) # recreate S with Astar
+dimnames(S_hat) = list(c("head1", "head2"), c("head1", "head2"))
+S_hat
+S # S and S_hat are equal
+
+## create new coordinates with pcs that interaction with xbar
+e1 <- Eig_vec[, 1]; e2 <- Eig_vec[, 2]
+slope1 <- e1[2] / e1[1] # slope of first pc 
+slope2 <- e2[2] / e2[1] # slope of second pc
+yy <- xbar[2]; xx <- xbar[1] 
+intercept1 <- yy - slope1 * xx # define intercept for first pc 
+intercept2 <- yy - slope2 * xx # define intercept for second pc
+old <- theme_set(theme_bw())
+P <- dat %>%
+  ggplot(aes(x = head1, y = head2)) + 
+  geom_point(colour = "darkblue", size = 4, shape = 1) + 
+  geom_abline(aes(slope = slope1, intercept = intercept1, 
+              colour = "Pc1"), size = 1, linetype = 1) + 
+  geom_abline(aes(slope = slope2, intercept = intercept2, 
+              colour = "Pc2"), size = 1, linetype = 1) +
+  coord_fixed(ratio = 1) + 
+  labs(x = "First son's head length (mm)", 
+       y = "Second son's head length (mm)")
+P
+```
+
+
+
+```{r}
+astar <- lamb[1, 1] * Eig_vec[, 1]
+astar
+astar <- cbind(astar)
+astar
+
+S_hat2 <- astar %*% (astar %>% t)
+S_hat2
+S
+```
+
+
+
+
+
+```{r fig.width = 5, fig.height = 5}
+
+dat2 <- pca_model2$scores %>% as.data.frame
+
+dat2 %>% head
+Xlim <- range(dat2$Comp.1)
+
+dat2 %>%
+  ggplot(aes(x = Comp.1, y = Comp.2)) + 
+  geom_point(shape = 16, size = 3, colour = "tomato") + 
+  coord_cartesian(xlim = Xlim, ylim = Xlim)  + 
+  scale_x_continuous(breaks = seq(-30, 20, by = 10)) + 
+  scale_y_continuous(breaks = seq(-30, 20, by = 10))
+```
+
+
+
+
+***
+***
+
+
+
+## Ex 3.10.2 Olympic heptathlon results
+```{r fig.width = 7, fig.height = 7}
+
+vcdExtra::datasets("HSAUR2")$Item
+datt <- heptathlon
+Nam <- names(heptathlon)
+datt3 <- read_table(file = file.choose(), 
+                    col_names = c("Names1", "Names2", Nam), 
+                    col_types = list(
+                      col_character(), 
+                      col_character(),
+                      col_double(), 
+                      col_double(),
+                      col_double(), 
+                      col_double(), 
+                      col_double(), 
+                      col_double(), 
+                      col_double(), 
+                      col_double()
+                    )) 
+Names <- paste(datt3$Names1, datt3$Names2, sep = " ")
+datt3 <- datt3 %>%
+  mutate(Names1 = NULL, Names2 = NULL, Names = Names) %>% 
+  column_to_rownames(var = "Names")
+  head(datt3)
+  datt <- datt3 %>%
+    mutate(hurdles = max(hurdles) - hurdles, 
+           run200m = max(run200m) - run200m, 
+           run800m = max(run800m) - run800m)
+  head(datt)
+  head(heptathlon)
+  score <- which(names(datt) == "score")
+  
+  library(corrplot)
+  Corr <- datt %>%
+    select(-score) %>%
+    cor %>%
+    round(2)
+Corr
+corrplot(Corr, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "correlation matrix", type = "full", 
+mar = c(0, 0, 5, 0), 
+bg = "gray40", addgrid.col = "yellow")
+```
+
+
+
+
+
+```{r fig.height = 7, fig.width = 7}
+library(car)
+datt %>%
+select(-score) %>%
+scatterplotMatrix(smooth = F, diagonal = F, 
+                  pch = 16, col = adjustcolor("orange", .5))
+```
+
+
+
+
+```{r fig.width = 7, fig.height = 7}
+pairs(datt, 
+      panel = function(x, y, ...){
+        points(x, y, pch = "", ...)
+        id <- 1:nrow(datt)
+        text(x, y, labels = id)
+      })
+
+datt %>%
+  select(-score) %>%
+  slice(-grep("PNG", rownames(datt))) -> datt4 
+ datt4 %>%
+  cor %>% 
+  round(2) -> Corr2
+  Corr2
+  corrplot(Corr2, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "correlation matrix", type = "full", 
+mar = c(0, 0, 5, 0), 
+bg = "gray40", addgrid.col = "yellow")
+```
+
+
+
+
+
+```{r fig.width = 7, fig.height = 7}
+
+scatterplotMatrix(datt4, smooth = F, 
+                  diagonal = F, pch = 16, 
+                  col = adjustcolor("black", .4))
+
+
+```
+
+
+
+
+
+```{r fig.height = 7, fig.width = 7}
+hel_comp <- prcomp(datt[, -score], scale = TRUE)
+print(hel_comp)
+library(factoextra)
+library(FactoMineR)
+hel_comp2 <- PCA(datt[, -score], graph = FALSE)
+eig_hel <- get_eigenvalue(hel_comp2)
+eig_hel
+
+fviz_eig(hel_comp2, addlabels = TRUE)
+
+var <- get_pca_var(hel_comp2)
+
+
+hel_comp$rotation[, 1]
+
+corrplot(var$coord, is.corr = F, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "correlation matrix", type = "full", 
+mar = c(0, 0, 5, 0), 
+bg = "gray40", addgrid.col = "yellow")
+
+  
+corrplot(var$cos2, is.corr = F, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "cos2 matrix", type = "full", 
+mar = c(0, 0, 5, 0), 
+bg = "gray40", addgrid.col = "yellow")
+
+corrplot(var$contrib, is.corr = F, method = "number", 
+col = c("orange", "green", "skyblue"), 
+title = "contribution matrix", type = "full", 
+mar = c(0, 0, 5, 0), 
+bg = "gray40", addgrid.col = "yellow")
+
+
+fviz_pca_var(hel_comp2, col.var = "coord",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE 
+             )
+fviz_contrib(hel_comp2, choice = "var", axes = 1, top = 15)
+
+fviz_contrib(hel_comp2, choice = "var", axes = 2, top = 15)
+
+res.desc <- dimdesc(hel_comp2, axes = 1:2, proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+var$coord[, 1]
+res.desc$Dim.2
+var$coord[, 2]
+
+Center <- hel_comp$center
+Center
+colMeans(datt4)
+
+Scale <- hel_comp$scale
+Scale
+apply(datt4, 2, sd)
+
+datt4 %>% class
+datt5 <- as.matrix(datt4)
+
+a1 <- scale(datt5, center = Center, scale = Scale)
+a2 <- scale(datt4)
+all(a1 == a2)
+
+a1 %*% hel_comp$rotation[, 1] %>% drop
+cat("\n\n\n")
+
+predict(hel_comp)[, 1]
+
+cat("\n\n\n")
+get_pca(hel_comp, "ind")$coord[, 1]
+
+
+cat("\n\n\n")
+
+hel_comp$x[, 1]
+
+plot(hel_comp)
+
+fviz_screeplot(hel_comp, choice = "eigenvalue", geom = "bar", 
+               barcolor = "gold2", barfill = "gold2")
+
+
+cor(datt$score, hel_comp$x[, 1])
+
+
+ggplot() + 
+  annotate(geom = "point", x = datt$score, 
+           y = hel_comp$x[, 1], shape = 16, colour = "red", 
+           size = 4, alpha = .5) + 
+  labs(x = "score", y = "PCA.1") 
+  
+  library(ggpubr)
+  library(ggpmisc)
+
+  ggscatter(data.frame(score = datt$score, 
+  PCA.1 = hel_comp$x[, 1]), 
+  x = "score", y = "PCA.1", 
+  add = "reg.line",
+  color = "red", alpha = .5, 
+  add.params = list(color = "darkblue"), size = 3, 
+  ggtheme = theme_bw()) +
+    stat_fit_glance(method = "lm",
+                    label.y = "top",
+                    label.x = "center",
+                    method.args = list(formula = y ~ x),
+                    mapping = aes(label = sprintf('italic(r)^2~"="~%.3f~~italic(P[value])~"="~%.2g',
+after_stat(r.squared), after_stat(p.value))),
+                    parse = TRUE)
+
+fviz_pca_biplot(hel_comp, repel = TRUE)
+
+library(missMDA)
+
+
+estim_ncpPCA(datt[, -score], ncp.min = 0, ncp.max = 5, 
+             method ="Regularized", 
+       scale = TRUE, method.cv = "kfold")
+
+```
+
+
+
+
+
+
+
